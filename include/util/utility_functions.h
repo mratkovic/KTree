@@ -16,6 +16,12 @@
 #include <dirent.h>
 #include <unistd.h>
 
+inline int32_t bitcnt(int32_t v) {
+    v = v - ((v >> 1) & 0x55555555);                 // reuse input as temporary
+    v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
+    return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;  // count
+}
+
 inline bool validateOutputFile(char*filePath) {
     fprintf(stderr, "W %s\n", filePath);
     FILE* f = fopen(filePath, "w");

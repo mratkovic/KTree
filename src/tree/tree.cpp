@@ -44,7 +44,7 @@ Tree::Tree(CTree* ctree) {
 
     wildcardCnt = 0;
     shape = new char[maxKmerLen + 1];
-    for (int i = 0; i < maxKmerLen; ++i){
+    for (int i = 0; i < maxKmerLen; ++i) {
         shape[i] = ctree->shape[i];
         wildcardCnt += (ctree->shape[i] == '1');
     }
@@ -126,10 +126,9 @@ pair<int32_t, int32_t> Tree::search(Node* n, char* kmer, int8_t kmerLen,
         throw "Search ended in null??";
     }
 
-    int32_t mini = min<int32_t>(kmerLen, n->len);
+    int32_t mini = n->len < kmerLen ? n->len : kmerLen;  //min<int32_t>(n->len, kmerLen);
     int32_t kmerIndex, refIndex;
-    tie(kmerIndex, refIndex) = diffIdx(kmer, txt + n->id, mini, depth,
-                                       type);
+    tie(kmerIndex, refIndex) = diffIdx(kmer, txt + n->id, mini, depth, type);
 
     if(refIndex != mini) {  // no match
         return {-1, -1};
@@ -147,11 +146,12 @@ pair<int32_t, int32_t> Tree::search(Node* n, char* kmer, int8_t kmerLen,
             return {n->FIRST, n->LAST};
 
         } else {  // find child
-            int8_t idx = bioinf::baseToInt(kmer[kmerIndex]);
+            //int8_t idx = bioinf::baseToInt(kmer[kmerIndex]);
+            int8_t idx = kmer[kmerIndex];
             if(n->MASK & (1 << idx)) {
-                idx = __builtin_popcountll(n->MASK & CHILD_MASK[idx]);
-                return search(&nodes[n->CHILD + idx], kmer+kmerIndex, kmerLen - kmerIndex,
-                              depth + mini, type);
+                idx = bitcnt(n->MASK & CHILD_MASK[idx]);
+                return search(&nodes[n->CHILD + idx], kmer + kmerIndex,
+                              kmerLen - kmerIndex, depth + mini, type);
 
             } else {  // no child
                 return {-1, -1};
@@ -173,7 +173,7 @@ int32_t Tree::dfsFirstPos(Node* n, int8_t depth) {
 int32_t Tree::dfsLastPos(Node* n, int8_t depth) {
     while (n->len + depth < maxKmerLen) {
         depth += n->len;
-        int cnt = __builtin_popcountll(n->MASK & 0xFF);
+        int cnt = bitcnt(n->MASK & 0xFF);
         n = &nodes[n->CHILD + cnt - 1];
     }
     return n->LAST;
@@ -251,7 +251,7 @@ Tree::Tree(FILE* in, const char* text, int32_t textLen) {
     fread(suffixArray, sizeof(suffixArray[0]), n, in);
 
     wildcardCnt = 0;
-    for (int i = 0; i < maxKmerLen; ++i){
+    for (int i = 0; i < maxKmerLen; ++i) {
         wildcardCnt += (shape[i] == '1');
     }
 }
@@ -324,18 +324,18 @@ void Tree::saveToDotFile(string path) {
     myfile.close();
 }
 
-void Tree::printResults(pair<int32_t, int32_t> result) {
+inline void Tree::printResults(pair<int32_t, int32_t> result) {
     int32_t first, last, cnt;
     tie(first, last) = result;
     cnt = last - first + 1;
 
     if(first != -1) {
-        printf("%d\n", cnt);
+        //printf("%d\n", cnt);
         for (int j = first; j <= last; ++j) {
-            printf("%d\n", suffixArray[j]);
+            //printf("%d\n", suffixArray[j]);
         }
     } else {
-        printf("0\n");
+        //printf("0\n");
     }
 }
 
@@ -346,8 +346,8 @@ void Tree::findMatches(char* read, int32_t readLen) {
 
         if(i + maxKmerLen - 1 + wildcardCnt < readLen)
             printResults(search(read + i, maxKmerLen + wildcardCnt, Insertion));
-        else
-            printf("0\n");
-
+        else {
+            //printf("0\n");
+        }
     }
 }

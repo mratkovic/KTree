@@ -55,7 +55,8 @@ CInnerNode* CTree::splitNode(CNode* node, int32_t i) {
     node->id += i;
     node->len -= i;
 
-    int8_t idx = bioinf::baseToInt(txt[node->id]);
+    //int8_t idx = bioinf::baseToInt(txt[node->id]);
+    int8_t idx = txt[node->id];
     parent->children[idx] = node;
 
     return parent;
@@ -75,7 +76,8 @@ CNode* CTree::insert(CNode* node, int32_t start, int32_t len, int32_t pos,
 
         if(!node->leaf) {  // inner node
             CInnerNode* inner = (CInnerNode *) node;
-            int8_t idx = bioinf::baseToInt(txt[start + diff]);
+            //int8_t idx = bioinf::baseToInt(txt[start + diff]);
+            int8_t idx = txt[start + diff];
             inner->children[idx] = insert(inner->children[idx], start + mini,
                                           len - mini, pos, depth + mini);
             return inner;
@@ -94,7 +96,8 @@ CNode* CTree::insert(CNode* node, int32_t start, int32_t len, int32_t pos,
 
         // new leaf
         CLeaf* leaf = new CLeaf(start + diff, len - diff, pos);
-        int8_t idx = bioinf::baseToInt(txt[start + diff]);
+        //int8_t idx = bioinf::baseToInt(txt[start + diff]);
+        int8_t idx = txt[start + diff];
         parent->children[idx] = leaf;
         return parent;
     }
